@@ -101,6 +101,18 @@ data_ingest(table="tutorial",
 cnx.commit()
 
 # STEP 4: CSV -> Table Schema (python to sql) -> Insert data
+import pandas as pd
+
+def get_data(file_path):
+    df=pd.read_csv(file_path)
+    df.drop(['Unnamed:0'],axis=1,inplace=True,errors='ignore')
+    return df
+
+df= get_data('/Users/adi/Desktop/proj/stock_temp_agg_cleaned_data.csv')
+df.info()
+df.dtypes
+df.columns
+
 '''
 mappings = {
     'int64': 'int',
