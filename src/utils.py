@@ -30,31 +30,34 @@ def connector(user:str,
     return cnx, cur
 
 # STEP 2 - Create db
-def build_db(db:str) -> None:
-    """Build db
+def build_db(cur:str, db:str) -> None:
+    """
+    Build db
 
     Args:
         db (str): Input db name
     """
-    cur.execute(f'DROP DATABASE IF EXISTS {db};')
-    cur.execute(f'CREATE DATABASE {db};')
+    {cur}.execute(f'DROP DATABASE IF EXISTS {db};')
+    {cur}.execute(f'CREATE DATABASE {db};')
     
 # STEP 3 - Read CSV data
 def get_data(file_path:str) -> DataFrame:
-    """_summary_
+    """
+    Read CSV data via pandas dataframe
 
     Args:
-        file_path (str): _description_
+        file_path (str): relative file path of input csv
 
     Returns:
-        DataFrame: _description_
+        DataFrame: resultant dataframe
     """
     df = pd.read_csv(file_path)
     return df
 
 # STEP 4 - Build Schema/Table --- how to connect table to df???
 def build_table(db:str, table:str, col1:str, col2:str) -> None:
-    """Create Schema with columns
+    """
+    Create Schema with columns
 
     Args:
         db (str): Database name
