@@ -1,22 +1,62 @@
 from utils import connector, build_db, get_data, build_schema, build_table, ingest_data, close_all
+import argparse
+import os
 
-# STEP 1 - connect to server
+# Script description and documentation reference
+parser = argparse.ArgumentParser(
+    prog= 'Database file',
+    description= 'Connect to mysqlserver, creates db if non-existent, build schema & table, thereby feed data to table',
+    epilog= 'https://docs.python.org/3/howto/argparse.html'
+)
+
+# Defining script args
+db_exists=False
+db_name='sales'
+file='/Users/zomato/Desktop/d2p_proj/data/supermarket_sales.csv'
+
+# Parse script arguments
+parser.add_argument("-v","--verbose", 
+                    help="increase output verbosity",
+                    action="store_true")
+
+parser.add_argument('-de','--db_exists',
+                    type=bool,
+                    default=False,
+                    help='Check whether db exists or not. Set to "True" to create new db, lest "False" to use existing db')
+
+parser.add_argument('-dn', '--db_name',
+                    type=str,
+                    required=True,
+                    help='Name of database')
+
+parser.add_argument('-f','--file_path',
+                    type=str,
+                    required=True,
+                    help='Location of file in directory')
+
+args = parser.parse_args()
+
+# STEP 1 - connect to Mysql server
 cnx,cur = connector(user='root', host='localhost')
 
-# STEP 2 - Create db
-build_db(cur=cur, db='sales')
+# STEP 2 - Create/Utilize db
+if args.db_exists:   
+    build_db(cur=cur, db=args.db_name)
+    print(db_name)
 
+else:
 # STEP 3 - Read CSV data
-df = get_data(file_path='data/supermarket_sales.csv')
+    df = get_data(file_path=args.file)
+    table_name = os.path.basename(args.file).split('.')[0]
 
 # STEP 4 - Build Schema
-schema, placeholders = build_schema(df)
+    schema, placeholders = build_schema(df=df)
 
 # STEP 5 - Build Table
-build_table(cur=cur, db='sales', table='sales_data', schema=schema)
+    build_table(cur=cur, db=args.db_name, table=table_name, schema=schema)
 
 # STEP 6 - Insert Data into Table
-ingest_data(cur=cur, cnx=cnx, df=df, placeholders=placeholders)
-    
+    ingest_data(cur=cur, cnx=cnx, df=df, table=table_name, placeholders=placeholders)
+        
 # STEP 7 - Close cursor, connection
-close_all(cur=cur, cnx=cnx)
+    close_all(cur=cur, cnx=cnx)

@@ -103,7 +103,7 @@ def build_table(cur:mysql.cursor.MySQLCursor, db: str, table: str, schema: str) 
     cur.execute(f'CREATE TABLE {table} {schema};')
 
 # STEP 6 - Insert Data into Table
-def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:DataFrame, placeholders:str) -> None:
+def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:DataFrame, table:str, placeholders:str) -> None:
     """
     Insert Data into Table
 
@@ -115,7 +115,7 @@ def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:Data
     """
     total=0
     for _,row in df.iterrows():
-        sql = f"INSERT INTO customers VALUES({placeholders})"
+        sql = f"INSERT INTO {table} VALUES({placeholders})"
         val = tuple(row)
         cur.execute(sql, val)
         if cur.rowcount==1:
