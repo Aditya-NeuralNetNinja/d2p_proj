@@ -1,4 +1,6 @@
-from utils import connector, build_db, get_data, build_schema, build_table, ingest_data, close_all
+# Imports
+from src.utils import (connector, build_db, get_data, 
+                   build_schema, build_table, ingest_data)
 import argparse
 import os
 
@@ -10,15 +12,13 @@ parser = argparse.ArgumentParser(
 )
 
 # Defining script args
+'''
 db_exists=False
 db_name='sales'
 file='/Users/zomato/Desktop/d2p_proj/data/supermarket_sales.csv'
+'''
 
 # Parse script arguments
-parser.add_argument("-v","--verbose", 
-                    help="increase output verbosity",
-                    action="store_true")
-
 parser.add_argument('-de','--db_exists',
                     type=bool,
                     default=False,
@@ -31,7 +31,6 @@ parser.add_argument('-dn', '--db_name',
 
 parser.add_argument('-f','--file_path',
                     type=str,
-                    required=True,
                     help='Location of file in directory')
 
 args = parser.parse_args()
@@ -42,12 +41,12 @@ cnx,cur = connector(user='root', host='localhost')
 # STEP 2 - Create/Utilize db
 if args.db_exists:   
     build_db(cur=cur, db=args.db_name)
-    print(db_name)
+    print(args.db_name)
 
 else:
 # STEP 3 - Read CSV data
-    df = get_data(file_path=args.file)
-    table_name = os.path.basename(args.file).split('.')[0]
+    df = get_data(file_path=args.file_path)
+    table_name = os.path.basename(args.file_path).split('.')[0]
 
 # STEP 4 - Build Schema
     schema, placeholders = build_schema(df=df)
@@ -59,4 +58,5 @@ else:
     ingest_data(cur=cur, cnx=cnx, df=df, table=table_name, placeholders=placeholders)
         
 # STEP 7 - Close cursor, connection
-    close_all(cur=cur, cnx=cnx)
+cur.close()
+cnx.close() # type: ignore

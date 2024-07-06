@@ -1,3 +1,4 @@
+# Imports
 import os
 from pandas import DataFrame
 import pandas as pd
@@ -8,7 +9,7 @@ from typing import Optional, Tuple
 
 load_dotenv()
 
-# STEP 1 - connect to server
+# STEP 1 - Connect to server
 def connector(user:str,
               host:str,
               db:Optional[str]=None) -> Tuple[mysql.MySQLConnection, mysql.cursor.MySQLCursor]:
@@ -121,13 +122,4 @@ def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:Data
         if cur.rowcount==1:
             total+=1
     cnx.commit()
-
-# STEP 7 - Close cursor, connection
-def close_all(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection) -> None:
-    """
-    Args:
-        cur (str): cursor
-        cnx (str): connection
-    """
-    cur.close()
-    cnx.close() # type: ignore
+    return total
