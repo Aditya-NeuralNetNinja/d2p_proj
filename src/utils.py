@@ -26,7 +26,7 @@ def connector(user:str,
 
     """
     cnx = mysql.connect(user=user,
-                        password=os.getenv('PASSWORD'),
+                        password=os.getenv('MySQL_Server_Password'),
                         host=host,
                         db=db)
     cur = cnx.cursor()
@@ -66,6 +66,7 @@ def get_data(file_path:str) -> DataFrame:
 def build_schema(df:DataFrame) -> Tuple[str, str]:
     """
     Convert python style datatypes into sql format datatypes of each column in dataframe
+    
     Args:
         df (pd.DataFrame): Input dataframe
     Returns:
@@ -109,10 +110,10 @@ def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:Data
     Insert Data into Table
 
     Args:
-        cur (str): _description_
-        cnx (str): _description_
-        df (DataFrame): _description_
-        placeholders (str): _description_
+        cur (str):  MySQL cursor
+        cnx (str): MySQL connection
+        df (DataFrame): Input pandas dataframe
+        placeholders (str): Formatted placeholders
     """
     total=0
     for _,row in df.iterrows():
