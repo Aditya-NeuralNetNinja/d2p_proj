@@ -11,13 +11,6 @@ parser = argparse.ArgumentParser(
     epilog= 'https://docs.python.org/3/howto/argparse.html'
 )
 
-# Defining script args
-'''
-db_exists=False
-db_name='sales'
-file='/Users/zomato/Desktop/d2p_proj/data/supermarket_sales.csv'
-'''
-
 # Parse script arguments
 parser.add_argument('-de','--db_exists',
                     type=bool,
@@ -40,8 +33,8 @@ cnx,cur = connector(user='root', host='localhost')
 
 # STEP 2 - Create/Utilize db
 if args.db_exists:   
-    build_db(cur=cur, db=args.db_name)
-    print(args.db_name)
+    db = build_db(cur=cur, db=args.db_name)
+    print(db)
 
 else:
 # STEP 3 - Read CSV data
@@ -55,7 +48,8 @@ else:
     build_table(cur=cur, db=args.db_name, table=table_name, schema=schema)
 
 # STEP 6 - Insert Data into Table
-    ingest_data(cur=cur, cnx=cnx, df=df, table=table_name, placeholders=placeholders)
+    counts = ingest_data(cur=cur, cnx=cnx, df=df, table=table_name, placeholders=placeholders)
+    print(f'{counts} rows inserted')
         
 # STEP 7 - Close cursor, connection
 cur.close()
