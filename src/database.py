@@ -1,5 +1,5 @@
 # Imports
-from src.utils import (connector, build_db, get_data, 
+from utils import (connector, build_db, get_data, 
                    build_schema, build_table, ingest_data)
 import argparse
 import os
