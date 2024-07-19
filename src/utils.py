@@ -5,7 +5,7 @@ import pandas as pd
 import mysql.connector as mysql
 from dotenv import load_dotenv
 from typing import Optional, Tuple
-
+from datetime import datetime
 
 load_dotenv()
 
@@ -104,7 +104,32 @@ def build_table(cur:mysql.cursor.MySQLCursor, db: str, table: str, schema: str) 
     cur.execute(f'DROP TABLE IF EXISTS {table};')
     cur.execute(f'CREATE TABLE {table} {schema};')
 
-# STEP 6 - Insert Data into Table
+# STEP 6 - Convert timestamp to hourly format
+def convert_timestamp(data: pd.DataFrame = None, column: str = None)-> DataFrame:
+    """
+    Convert timestamp to hourly format
+
+    Args:
+        data (pd.DataFrame, optional): Input dataframe. Defaults to None.
+        column (str, optional): Timestamp column. Defaults to None.
+
+    Returns:
+        DataFrame: Modified DataFrame with hourly timestamp format
+    """
+    dummy = data.copy()
+    new_ts = dummy[column].tolist()
+    
+    # Ensure all timestamps are datetime objects
+    new_ts = [datetime.strptime(i, '%Y-%m-%d %H:%M:%S') if isinstance(i, str) else i for i in new_ts]
+    
+    # Convert to hourly timestamps
+    new_ts = [i.strftime('%Y-%m-%d %H:00:00') for i in new_ts]
+    new_ts = [datetime.strptime(i, '%Y-%m-%d %H:00:00') for i in new_ts]
+
+    dummy[column] = new_ts
+    return dummy
+
+# STEP 7 - Insert Data into Table
 def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:DataFrame, table:str, placeholders:str) -> None:
     """
     Insert Data into Table

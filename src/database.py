@@ -1,6 +1,6 @@
 # Imports
 from utils import (connector, build_db, get_data, 
-                   build_schema, build_table, ingest_data)
+                   build_schema, build_table, ingest_data, convert_timestamp)
 import argparse
 import os
 
@@ -26,6 +26,11 @@ parser.add_argument('-f','--file_path',
                     type=str,
                     help='Location of file in directory')
 
+parser.add_argument('-t','--timestamp',
+                    type=str,
+                    default='timestamp',
+                    help='Column associated with date,time')
+
 args = parser.parse_args()
 
 # STEP 1 - connect to Mysql server
@@ -46,11 +51,15 @@ else:
 
 # STEP 5 - Build Table
     build_table(cur=cur, db=args.db_name, table=table_name, schema=schema)
-
-# STEP 6 - Insert Data into Table
-    counts = ingest_data(cur=cur, cnx=cnx, df=df, table=table_name, placeholders=placeholders)
-    print(f'{counts} rows inserted')
         
-# STEP 7 - Close cursor, connection
+# STEP 6 - Convert timestamp to hourly
+    df_hourly = convert_timestamp(data=df,column=args.timestamp)
+    print(df_hourly.head())
+
+# STEP 7 - Insert Data into Table
+    counts = ingest_data(cur=cur, cnx=cnx, df=df_hourly, table=table_name, placeholders=placeholders)
+    print(f'{counts} rows inserted')
+
+# STEP 8 - Close cursor, connection
 cur.close()
 cnx.close() # type: ignore
