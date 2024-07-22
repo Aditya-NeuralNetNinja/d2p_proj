@@ -1,6 +1,5 @@
 import pandas as pd
 from datetime import datetime
-import os
 
 def read(file_path:str)-> pd.DataFrame:    
     return pd.read_csv(file_path)
