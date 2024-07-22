@@ -26,11 +26,6 @@ parser.add_argument('-f','--file_path',
                     type=str,
                     help='Location of file in directory')
 
-parser.add_argument('-t','--timestamp',
-                    type=str,
-                    default='timestamp',
-                    help='Column associated with date,time')
-
 args = parser.parse_args()
 
 # STEP 1 - connect to Mysql server
