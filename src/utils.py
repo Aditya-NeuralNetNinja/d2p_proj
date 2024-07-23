@@ -1,11 +1,10 @@
 # Imports
 import os
+from typing import Optional, Tuple
 from pandas import DataFrame
 import pandas as pd
 import mysql.connector as mysql
 from dotenv import load_dotenv
-from typing import Optional, Tuple
-from datetime import datetime
 
 load_dotenv()
 
