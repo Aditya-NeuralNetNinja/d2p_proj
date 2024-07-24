@@ -1,18 +1,12 @@
+# Imports
 from datetime import datetime
 import pandas as pd
+from utils import get_modified_data
 
-
-def read(file_path:str)-> pd.DataFrame:    
-    return pd.read_csv(file_path)
-
-df1 = read('data/sales.csv')
-df2 = read('data/sensor_stock_levels.csv')
-df3 = read('data/sensor_storage_temperature.csv')
-
-# Convert 'timestamp' column to datetime
-df1['timestamp'] = pd.to_datetime(df1['timestamp'], format='%Y-%m-%d %H:%M:%S')
-df2['timestamp'] = pd.to_datetime(df2['timestamp'], format='%Y-%m-%d %H:%M:%S')
-df3['timestamp'] = pd.to_datetime(df3['timestamp'], format='%Y-%m-%d %H:%M:%S')
+# Build pandas dataframe with 'timestamp' column datatype change
+df1 = get_modified_data('data/sales.csv')
+df2 = get_modified_data('data/sensor_stock_levels.csv')
+df3 = get_modified_data('data/sensor_storage_temperature.csv')
 
 # Convert timestamp to hourly level
 def convert_timestamp_to_hourly(data: pd.DataFrame = None, column: str = None) -> pd.DataFrame:

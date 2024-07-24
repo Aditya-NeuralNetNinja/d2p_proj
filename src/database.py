@@ -1,8 +1,7 @@
 # Imports
-from utils import (connector, build_db, get_data, 
-                   build_schema, build_table, ingest_data)
 import argparse
 import os
+from utils import (connector, build_db, get_modified_data, build_schema, build_table, ingest_data)
 
 # Script description and documentation reference
 parser = argparse.ArgumentParser(
@@ -38,7 +37,7 @@ if args.db_exists:
 
 else:
 # STEP 3 - Read CSV data
-    df = get_data(file_path=args.file_path)
+    df = get_modified_data(file_path=args.file_path)
     table_name = os.path.basename(args.file_path).split('.')[0]
 
 # STEP 4 - Build Schema
