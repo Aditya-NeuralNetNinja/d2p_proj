@@ -1,11 +1,10 @@
 # Imports
 import os
+from typing import Optional, Tuple
 from pandas import DataFrame
 import pandas as pd
 import mysql.connector as mysql
 from dotenv import load_dotenv
-from typing import Optional, Tuple
-
 
 load_dotenv()
 
@@ -45,7 +44,7 @@ def build_db(cur:mysql.cursor.MySQLCursor, db:str) -> None:
     cur.execute('SHOW DATABASES')
     databases = cur.fetchall()
     return databases
-    
+   
 # STEP 3 - Read CSV data
 def get_data(file_path:str) -> DataFrame:
     """
@@ -58,11 +57,13 @@ def get_data(file_path:str) -> DataFrame:
         DataFrame: resultant dataframe
     """
     df = pd.read_csv(file_path)
+    
+    # Drop 'Unnamed:0' column if it exists, ignoring errors if not present
     df.drop(['Unnamed:0'],axis=1,inplace=True,errors='ignore')
+    
     return df
 
 # STEP 4 - Build Schema
-
 def build_schema(df:DataFrame) -> Tuple[str, str]:
     """
     Convert python style datatypes into sql format datatypes of each column in dataframe

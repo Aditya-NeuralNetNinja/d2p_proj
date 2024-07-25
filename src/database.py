@@ -1,8 +1,7 @@
 # Imports
-from utils import (connector, build_db, get_data, 
-                   build_schema, build_table, ingest_data)
 import argparse
 import os
+from utils import (connector, build_db, get_data, build_schema, build_table, ingest_data)
 
 # Script description and documentation reference
 parser = argparse.ArgumentParser(
