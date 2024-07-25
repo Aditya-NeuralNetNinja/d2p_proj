@@ -1,30 +1,27 @@
 # Imports
-from datetime import datetime
 import pandas as pd
-from utils import get_modified_data
+from utils import get_data
 
 # Build pandas dataframe with 'timestamp' column datatype change
-df1 = get_modified_data('data/sales.csv')
-df2 = get_modified_data('data/sensor_stock_levels.csv')
-df3 = get_modified_data('data/sensor_storage_temperature.csv')
+df1 = get_data('data/sales.csv')
+df2 = get_data('data/sensor_stock_levels.csv')
+df3 = get_data('data/sensor_storage_temperature.csv')
 
 # Convert timestamp to hourly level
-def convert_timestamp_to_hourly(data: pd.DataFrame = None, column: str = None) -> pd.DataFrame:
+def convert_timestamp_to_hourly(df:pd.DataFrame = None, column:str = None) -> pd.DataFrame:
     """
     Convert timestamp to hourly level
 
     Args:
-        data (pd.DataFrame, optional): Input dataframe. Defaults to None.
+        df (pd.DataFrame, optional): Input dataframe. Defaults to None.
         column (str, optional): Column related to datetime data. Defaults to None.
 
     Returns:
-        DataFrame: resultant dataframe
+        DataFrame: resultant dataframe with hourly timestamps.
     """
-    dummy = data.copy()
-    new_ts = dummy[column].tolist()
-    new_ts = [i.strftime('%Y-%m-%d %H:00:00') for i in new_ts]
-    new_ts = [datetime.strptime(i, '%Y-%m-%d %H:00:00') for i in new_ts]
-    dummy[column] = new_ts
+    dummy = df.copy()
+    dummy[column] = pd.to_datetime(dummy[column], format='%Y-%m-%d %H:%M:%S') # String to datetime datatype conversion
+    dummy[column] = dummy[column].dt.floor('H') # Truncate timestamps to beginning of hour
     return dummy
 
 df1_hourly = convert_timestamp_to_hourly(df1,'timestamp')

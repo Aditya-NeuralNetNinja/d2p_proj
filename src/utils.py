@@ -45,8 +45,8 @@ def build_db(cur:mysql.cursor.MySQLCursor, db:str) -> None:
     databases = cur.fetchall()
     return databases
    
-# STEP 3 - Read CSV data, convert timestamp column datatype
-def get_modified_data(file_path:str) -> DataFrame:
+# STEP 3 - Read CSV data
+def get_data(file_path:str) -> DataFrame:
     """
     Read CSV data via pandas dataframe
 
@@ -58,19 +58,12 @@ def get_modified_data(file_path:str) -> DataFrame:
     """
     df = pd.read_csv(file_path)
     
-    # Try changing datatype if 'datetime' column exists in dataframe, else ignore
-    try:
-        df['timestamp'] = pd.to_datetime(df['timestamp'], format='%Y-%m-%d %H:%M:%S')
-    except KeyError:
-        pass
-    
     # Drop 'Unnamed:0' column if it exists, ignoring errors if not present
     df.drop(['Unnamed:0'],axis=1,inplace=True,errors='ignore')
     
     return df
 
 # STEP 4 - Build Schema
-
 def build_schema(df:DataFrame) -> Tuple[str, str]:
     """
     Convert python style datatypes into sql format datatypes of each column in dataframe
