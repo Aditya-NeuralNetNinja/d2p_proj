@@ -5,6 +5,7 @@ from pandas import DataFrame
 import pandas as pd
 import mysql.connector as mysql
 from dotenv import load_dotenv
+import boto3
 
 load_dotenv()
 
@@ -125,3 +126,62 @@ def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:Data
             total+=1
     cnx.commit()
     return total
+
+# STEP 7
+def authenticate_aws(service:str, bucket:str) -> Tuple:
+    """
+      Authenticate with AWS and return a client for the specified service and bucket.
+
+    Args:
+        service (str): Name of AWS service to connect to.
+        bucket (str): Name of the S3 bucket to interact with.
+
+    Returns:
+        Tuple: A tuple containing the AWS client for the specified service and the bucket name.
+    """
+    load_dotenv()
+    client = boto3.client(service,
+                          aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                          aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+                          region_name='ap-south-1')
+    
+    return client, bucket
+    
+# STEP 8    
+def upload_file_to_s3(df:pd.DataFrame, filename:str) -> str:
+    """
+    Upload file to S3 bucket
+
+    Args:
+        df (pd.DataFrame): Input dataframe
+        filename (str): Input filename to be uploaded to s3 bucket
+
+    Returns:
+        String: Remark 'data loaded'
+    """
+    s3_client, bucket_name = authenticate_aws('s3','test-d2p-bucket')
+    csv_data = df.to_csv(index=False)
+    response = s3_client.put_object(
+        ACL = 'private',
+        Bucket = bucket_name,
+        Body = csv_data,
+        Key = f'{filename}'.csv
+    )
+    return 'data loaded'
+
+# STEP 9
+def read_file_of_s3(bucket_name: str, filename:str) -> pd.DataFrame:
+    """
+    Read uploaded file in s3 bucket
+
+    Args:
+        bucket_name (str): s3 bucket name
+        filename (str): File name uploaded to s3 bucket
+
+    Returns:
+        pd.DataFrame: Output dataframe 
+    """
+    s3_client, bucket_name = authenticate_aws('s3','test-d2p-bucket')
+    res = s3_client.get_object(Bucket=bucket_name, Key=filename)
+    df = pd.DataFrame(res['Body'])
+    return df
