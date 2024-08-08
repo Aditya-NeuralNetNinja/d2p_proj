@@ -150,7 +150,7 @@ def authenticate_aws(service:str, bucket:str) -> Tuple:
 # STEP 8    
 def upload_file_to_s3(df:pd.DataFrame, filename:str) -> str:
     """
-    Upload file to S3 bucket
+    Upload file to S3 bucket without saving file locally
 
     Args:
         df (pd.DataFrame): Input dataframe
@@ -165,7 +165,7 @@ def upload_file_to_s3(df:pd.DataFrame, filename:str) -> str:
         ACL = 'private',
         Bucket = bucket_name,
         Body = csv_data,
-        Key = f'{filename}'.csv
+        Key = f'{filename}.csv'
     )
     return 'data loaded'
 
