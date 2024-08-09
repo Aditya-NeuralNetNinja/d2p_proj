@@ -2,10 +2,12 @@
 import pandas as pd
 from utils import get_data
 
+
 # Build pandas dataframe with 'timestamp' column datatype change
 df1 = get_data('data/sales.csv')
 df2 = get_data('data/sensor_stock_levels.csv')
 df3 = get_data('data/sensor_storage_temperature.csv')
+
 
 # Convert timestamp to hourly level
 def convert_timestamp_to_hourly(df:pd.DataFrame = None, column:str = None) -> pd.DataFrame:
