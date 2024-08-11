@@ -4,8 +4,8 @@ SELECT
     a.estimated_stock_pct,
     b.quantity,
     c.temperature
-FROM sale_processed.sensor_processed a
-LEFT JOIN sale_processed.sales_processed b
+FROM inventory_processed_db.stock_processed a
+LEFT JOIN inventory_processed_db.sales_processed b
     ON a.product_id = b.product_id AND a.timestamp = b.timestamp
-LEFT JOIN sale_processed.temp_processed c
+LEFT JOIN inventory_processed_db.temp_processed c
     ON a.timestamp = c.timestamp;
