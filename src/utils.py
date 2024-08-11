@@ -155,27 +155,34 @@ def authenticate_aws(service:str) -> Tuple:
 
 
 # STEP 8    
-def upload_file_to_s3(df:pd.DataFrame, filename:str, bucket:str) -> str:
+def upload_file_to_s3(df:pd.DataFrame, filename:str, bucket:str) -> bool:
     """
     Upload file to S3 bucket without saving file locally
 
     Args:
         df (pd.DataFrame): Input dataframe
-        filename (str): Input filename to be uploaded to s3 bucket
+        filename (str): Name by which file is saved after being uploaded to s3 bucket
         bucket (str): s3 bucket name
-
+        
     Returns:
-        String: Remark 'data loaded'
+        bool: True if the file is uploaded successfully, False otherwise
+
+    Raises:
+        Exception: If an error occurs during the upload process
     """
-    s3_client = authenticate_aws('s3')
-    csv_data = df.to_csv(index=False)
-    response = s3_client.put_object(
-        ACL = 'private',
-        Bucket = bucket,
-        Body = csv_data,
-        Key = f'{filename}.csv'
-    )
-    return True
+    try:
+        s3_client = authenticate_aws('s3')
+        csv_data = df.to_csv(index=False)
+        response = s3_client.put_object(
+            ACL = 'private',
+            Bucket = bucket,
+            Body = csv_data,
+            Key = f'{filename}.csv'
+        )
+        return True
+    except Exception as e:
+        print(f"An error occurred during the upload process: {str(e)}")
+        return False
 
 
 # STEP 9
@@ -185,7 +192,7 @@ def read_file_of_s3(bucket_name: str, filename:str) -> pd.DataFrame:
 
     Args:
         bucket_name (str): s3 bucket name
-        filename (str): File name uploaded to s3 bucket
+        filename (str): Name by which file is saved after being uploaded to s3 bucket
 
     Returns:
         pd.DataFrame: Output dataframe 
