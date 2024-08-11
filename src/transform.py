@@ -26,14 +26,38 @@ def convert_timestamp_to_hourly(df:pd.DataFrame = None, column:str = None) -> pd
     dummy[column] = dummy[column].dt.floor('H') # Truncate timestamps to beginning of hour
     return dummy
 
+
+# Create separate dataframe + aggregation
+def aggregate(df: pd.DataFrame, col1: str, col2: str, aggregate_col: str, operation: str) -> pd.DataFrame:
+    """
+    Performs a groupby and aggregation operation on a pandas DataFrame.
+
+    Groups the DataFrame by specified columns and applies the given operation
+    to the aggregate column.
+
+    Args:
+        df (pd.DataFrame): The input pandas DataFrame.
+        col1 (str): The first column to group by.
+        col2 (str): The second column to group by.
+        aggregate_col (str): The column to aggregate.
+        operation (str): The aggregation operation to apply (e.g., 'sum', 'mean', 'min', 'max').
+
+    Returns:
+        pd.DataFrame: A new DataFrame containing the grouped and aggregated data.
+    """
+    df_new = df.groupby(by=[col1, col2]).agg({aggregate_col: operation}).reset_index()
+    return df_new
+
+
+# Using convert_timestamp_to_hourly function
 df1_hourly = convert_timestamp_to_hourly(df1,'timestamp')
 df2_hourly = convert_timestamp_to_hourly(df2,'timestamp')
 df3_hourly = convert_timestamp_to_hourly(df3,'timestamp')
 
-# Create separate dataframe + aggregation
-sales_df = df1_hourly.groupby(by=['timestamp','product_id']).agg({'quantity' : 'sum'}).reset_index()
-sensor_df = df2_hourly.groupby(by=['timestamp','product_id']).agg({'estimated_stock_pct' : 'mean'}).reset_index()
-temp_df = df3_hourly.groupby(by=['timestamp']).agg({'temperature' : 'mean'}).reset_index()
+# Using the aggregate function
+sales_df = aggregate(df1_hourly, 'timestamp', 'product_id', 'quantity', 'sum')
+sensor_df = aggregate(df2_hourly, 'timestamp', 'product_id', 'estimated_stock_pct', 'mean')
+temp_df = aggregate(df3_hourly, 'timestamp', None, 'temperature', 'mean')  # No second column, use None
 
 # Export processed files to CSV format
 sales_df.to_csv('sales_processed.csv', index=False)
