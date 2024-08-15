@@ -5,8 +5,8 @@ from pandas import DataFrame
 import pandas as pd
 import mysql.connector as mysql
 from dotenv import load_dotenv
+import boto3
 
-load_dotenv()
 
 # STEP 1 - Connect to server
 def connector(user:str,
@@ -24,12 +24,14 @@ def connector(user:str,
         Tuple[str,str]: Returns connection, cursor
 
     """
+    load_dotenv()
     cnx = mysql.connect(user=user,
                         password=os.getenv('MySQL_Server_Password'),
                         host=host,
                         db=db)
     cur = cnx.cursor()
     return cnx, cur
+
 
 # STEP 2 - Create db
 def build_db(cur:mysql.cursor.MySQLCursor, db:str) -> None:
@@ -44,6 +46,7 @@ def build_db(cur:mysql.cursor.MySQLCursor, db:str) -> None:
     cur.execute('SHOW DATABASES')
     databases = cur.fetchall()
     return databases
+  
    
 # STEP 3 - Read CSV data
 def get_data(file_path:str) -> DataFrame:
@@ -62,6 +65,7 @@ def get_data(file_path:str) -> DataFrame:
     df.drop(['Unnamed:0'],axis=1,inplace=True,errors='ignore')
     
     return df
+
 
 # STEP 4 - Build Schema
 def build_schema(df:DataFrame) -> Tuple[str, str]:
@@ -91,6 +95,7 @@ def build_schema(df:DataFrame) -> Tuple[str, str]:
     
     return result, placeholders
 
+
 # STEP 5 - Build Table
 def build_table(cur:mysql.cursor.MySQLCursor, db: str, table: str, schema: str) -> None:
     """
@@ -104,6 +109,7 @@ def build_table(cur:mysql.cursor.MySQLCursor, db: str, table: str, schema: str) 
     cur.execute(f'USE {db};')
     cur.execute(f'DROP TABLE IF EXISTS {table};')
     cur.execute(f'CREATE TABLE {table} {schema};')
+
 
 # STEP 6 - Insert Data into Table
 def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:DataFrame, table:str, placeholders:str) -> None:
@@ -125,3 +131,73 @@ def ingest_data(cur:mysql.cursor.MySQLCursor, cnx:mysql.MySQLConnection, df:Data
             total+=1
     cnx.commit()
     return total
+
+
+# STEP 7
+def authenticate_aws(service:str) -> Tuple:
+    """
+      Authenticate with AWS and return a client for the specified service and bucket.
+
+    Args:
+        service (str): Name of AWS service to connect to.
+        bucket (str): Name of the S3 bucket to interact with.
+
+    Returns:
+        Tuple: A tuple containing the AWS client for the specified service and the bucket name.
+    """
+    load_dotenv()
+    client = boto3.client(service,
+                          aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+                          aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+                          region_name='ap-south-1')
+    
+    return client
+
+
+# STEP 8    
+def upload_file_to_s3(df:pd.DataFrame, filename:str, bucket:str) -> bool:
+    """
+    Upload file to S3 bucket without saving file locally
+
+    Args:
+        df (pd.DataFrame): Input dataframe
+        filename (str): Name by which file is saved after being uploaded to s3 bucket
+        bucket (str): s3 bucket name
+        
+    Returns:
+        bool: True if the file is uploaded successfully, False otherwise
+
+    Raises:
+        Exception: If an error occurs during the upload process
+    """
+    try:
+        s3_client = authenticate_aws('s3')
+        csv_data = df.to_csv(index=False)
+        response = s3_client.put_object(
+            ACL = 'private',
+            Bucket = bucket,
+            Body = csv_data,
+            Key = f'{filename}.csv'
+        )
+        return True
+    except Exception as e:
+        print(f"An error occurred during the upload process: {str(e)}")
+        return False
+
+
+# STEP 9
+def read_file_of_s3(bucket_name: str, filename:str) -> pd.DataFrame:
+    """
+    Read uploaded file in s3 bucket
+
+    Args:
+        bucket_name (str): s3 bucket name
+        filename (str): Name by which file is saved after being uploaded to s3 bucket
+
+    Returns:
+        pd.DataFrame: Output dataframe 
+    """
+    s3_client = authenticate_aws('s3')
+    res = s3_client.get_object(Bucket=bucket_name, Key=filename)
+    df = pd.DataFrame(res['Body'])
+    return df
