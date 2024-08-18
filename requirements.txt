@@ -1,5 +1,6 @@
 mysql-connector-python
 python-dotenv
 pandas
+boto3
 Flask
 prophet
