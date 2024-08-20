@@ -6,6 +6,9 @@ import pandas as pd
 import mysql.connector as mysql
 from dotenv import load_dotenv
 import boto3
+import gspread
+from googleapiclient.discovery import build
+from oauth2client.service_account import ServiceAccountCredentials
 
 
 # STEP 1 - Connect to server
@@ -201,3 +204,84 @@ def read_file_of_s3(bucket_name: str, filename:str) -> pd.DataFrame:
     res = s3_client.get_object(Bucket=bucket_name, Key=filename)
     df = pd.DataFrame(res['Body'])
     return df
+
+
+# STEP 10 - Define a function to Upload a file to a Google Sheet
+def upload_to_google_sheet(spreadsheet_id: str, df: pd.DataFrame, worksheet_name: str) -> bool:
+    """
+    Uploads a pandas DataFrame to a Google Sheet.
+
+    Parameters:
+    -----------
+    spreadsheet_id : str
+        The ID of the Google Sheet to upload the DataFrame to.
+
+    df : pandas.DataFrame
+        The pandas DataFrame to upload.
+
+    worksheet_name : str
+        The name of the worksheet within the Google Sheet to upload the DataFrame to.
+
+    Returns:
+    --------
+    bool
+        True if the DataFrame was successfully uploaded, False otherwise.
+
+    """
+    # Authenticate with Google Sheets API
+    
+    SCOPES = [
+        "https://spreadsheets.google.com/feeds",
+        'https://www.googleapis.com/auth/spreadsheets',
+        "https://www.googleapis.com/auth/drive.file",
+        "https://www.googleapis.com/auth/drive"
+    ]
+    
+    load_dotenv() # load environment variables from .env file
+
+    # get the values from environment variables
+    type = "service_account"
+    auth_uri = "https://accounts.google.com/o/oauth2/auth"
+    token_uri = "https://oauth2.googleapis.com/token"
+    auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
+    project_id = "psyched-runner-432518-q8"
+    private_key_id = os.getenv("PRIVATE_KEY_ID")
+    private_key = os.getenv("PRIVATE_KEY") 
+    client_email = os.getenv("CLIENT_EMAIL")
+    client_id = os.getenv("CLIENT_ID")
+    client_x509_cert_url = os.getenv("CLIENT_X509_CERT_URL")
+    
+    credentials = ServiceAccountCredentials.from_json_keyfile_dict({
+        "type": type,
+        "project_id": project_id,
+        "private_key_id": private_key_id,
+        "private_key": private_key,
+        "client_email": client_email,
+        "client_id": client_id,
+        "auth_uri": auth_uri,
+        "token_uri": token_uri,
+        "auth_provider_x509_cert_url": auth_provider_x509_cert_url,
+        "client_x509_cert_url": client_x509_cert_url,
+    }, scopes=SCOPES)
+
+    # auth
+    gc = gspread.authorize(credentials)
+
+    # Open the worksheet
+    try:
+        worksheet = gc.open_by_key(spreadsheet_id).worksheet(worksheet_name)
+    except gspread.exceptions.WorksheetNotFound:
+        worksheet = gc.open_by_key(spreadsheet_id).add_worksheet(worksheet_name, 1, 1)
+
+    # Clear the existing content in the worksheet
+    worksheet.clear()
+
+    # Convert Timestamp columns to string format
+    df = df.astype(str)
+
+    # Write the DataFrame to the worksheet
+    cell_list = worksheet.update([df.columns.values.tolist()] + df.values.tolist())
+    if cell_list:
+        return True
+    else:
+        return False
