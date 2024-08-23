@@ -1,5 +1,6 @@
 # Imports
 import os
+import io
 from typing import Optional, Tuple
 from pandas import DataFrame
 import pandas as pd
@@ -188,7 +189,7 @@ def upload_file_to_s3(df:pd.DataFrame, filename:str, bucket:str) -> bool:
 
 
 # STEP 9
-def read_file_of_s3(bucket_name: str, filename:str) -> pd.DataFrame:
+def read_file_of_s3(bucket_name: str, filename: str) -> pd.DataFrame:
     """
     Read uploaded file in s3 bucket
 
@@ -200,8 +201,8 @@ def read_file_of_s3(bucket_name: str, filename:str) -> pd.DataFrame:
         pd.DataFrame: Output dataframe 
     """
     s3_client = authenticate_aws('s3')
-    res = s3_client.get_object(Bucket=bucket_name, Key=filename)
-    df = pd.DataFrame(res['Body'])
+    obj = s3_client.get_object(Bucket=bucket_name, Key=filename)
+    df = pd.read_csv(io.BytesIO(obj['Body'].read())) # Parse into a DataFrame with multiple columns
     return df
 
 
@@ -245,7 +246,7 @@ def upload_to_google_sheet(spreadsheet_id: str, df: pd.DataFrame, worksheet_name
     auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
     project_id = "psyched-runner-432518-q8"
     private_key_id = os.getenv("PRIVATE_KEY_ID")
-    private_key = os.getenv(PRIVATE_KEY)
+    private_key = os.getenv("PRIVATE_KEY")
     client_email = os.getenv("CLIENT_EMAIL")
     client_id = os.getenv("CLIENT_ID")
     client_x509_cert_url = os.getenv("CLIENT_X509_CERT_URL")

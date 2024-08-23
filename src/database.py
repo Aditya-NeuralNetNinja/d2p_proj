@@ -6,11 +6,21 @@ from utils import (connector, build_db, get_data, build_schema, build_table, ing
 # Script description and documentation reference
 parser = argparse.ArgumentParser(
     prog= 'Database file',
-    description= 'Connect to mysqlserver, creates db if non-existent, build schema & table, thereby feed data to table',
+    description= 'Connect to MySQL server, creates db if non-existent, build schema & table, thereby feed data to table',
     epilog= 'https://docs.python.org/3/howto/argparse.html'
 )
 
 # Parse script arguments
+parser.add_argument('-u','--user',
+                    type=str,
+                    default='admin',
+                    help='Username to connect with MySQL server')
+
+parser.add_argument('-h','--host',
+                    type=str,
+                    required=True,
+                    help='Host name of MySQL server')
+
 parser.add_argument('-de','--db_exists',
                     type=bool,
                     default=False,
@@ -27,8 +37,8 @@ parser.add_argument('-f','--file_path',
 
 args = parser.parse_args()
 
-# STEP 1 - connect to Mysql server
-cnx,cur = connector(user='root', host='localhost')
+# STEP 1 - Connect to Mysql server
+cnx,cur = connector(user=args.user, host=args.host)
 
 # STEP 2 - Create/Utilize db
 if args.db_exists:   

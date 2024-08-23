@@ -1,38 +1,61 @@
 import pandas as pd
 from prophet import Prophet
-from src.utils import authenticate_aws, upload_to_google_sheet
+from src.utils import read_file_of_s3, upload_to_google_sheet
 
-
-# Download file from s3 bucket
-client = authenticate_aws(service='s3')
 bucket_name = 'test-d2p-bucket'
 object_name = 'inventory_data.csv'
-download_file_path = 'data/inventory_data.csv'
 
-client.download_file(bucket_name, object_name, download_file_path)
+def model(df: pd.DataFrame, periods: int) -> pd.DataFrame:
+    """
+    Train prophet model and forecast on future timestamps
 
-df = pd.read_csv(download_file_path)
+    Args:
+        df (pd.DataFrame): Input dataframe containing historical data
+        periods (int): Number of timestamps of future that needs to be created
 
-df['timestamp'] = pd.to_datetime(df['timestamp'])
+    Returns:
+        pd.DataFrame: Resultant dataframe comprising of predictions on historical, futuristic data
+    """
+    # Initialize and train the Prophet model on historical data
+    m = Prophet()
+    m.fit(df)
+    
+    # Create future dates for forecasting, including historical dates
+    future = m.make_future_dataframe(periods=periods, freq='h', include_history=True)
+    
+    # Forecast for both historical and future dates
+    forecast = m.predict(future)
+    return forecast
 
-df1 = df.drop(['product_id','quantity','temperature'], axis=1)
+def process()->bool:
+    """
+    Preprocess input data, generate predictions, upload resultant DataFrame to Google Sheet
 
-df1 = df1.rename(columns={'estimated_stock_pct': 'y', 'timestamp': 'ds'})
+    Returns:
+        bool: True, if function write the resultant DataFrame to Google Sheet, lest False
+    """
+    # Read data from S3
+    df = read_file_of_s3(bucket_name=bucket_name, filename=object_name)
 
-m = Prophet()
-m.fit(df1)
+    # Convert timestamp to datetime
+    df['timestamp'] = pd.to_datetime(df['timestamp'])
 
-# Create future dates for forecasting
-future = m.make_future_dataframe(periods=200, freq='h')
+    # Drop unnecessary columns
+    df = df.drop(['product_id', 'quantity', 'temperature'], axis=1)
 
-forecast = m.predict(future)
+    # Rename columns for Prophet
+    df = df.rename(columns={'estimated_stock_pct': 'y', 'timestamp': 'ds'})
 
-# Select only the 'ds' and 'yhat' columns from the forecast
-forecast_full = forecast[['ds', 'yhat']]
+    # Generate forecast for both historical and future periods
+    forecast = model(df, periods=200)
 
-# Append the forecast to the historical data
-combined_df = pd.concat([df1, forecast_full], ignore_index=True)
+    # Merge the original 'y' values back with the forecasted 'yhat'
+    forecast_merged = pd.merge(df[['ds', 'y']], forecast[['ds', 'yhat']], on='ds', how='right')
 
-upload_to_google_sheet(spreadsheet_id='1bN4obw3LQD1ZlYoTBuB3bs1AqwzXK1zdaUxWZRz8jJI',
-                       df=combined_df,
-                       worksheet_name='prophet')
+    # Upload the resultant DataFrame to Google Sheet
+    upload_to_google_sheet(spreadsheet_id='1nVyQhLnWrwvlROG8wRAbOtJPl9-ASiPAh9k_J1Mvi4I',
+                           df=forecast_merged,
+                           worksheet_name='prophet')
+
+# Run the process
+process()
