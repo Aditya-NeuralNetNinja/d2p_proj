@@ -1,6 +1,8 @@
 import mysql.connector as mysql
 import pandas as pd
-from utils import (connector, upload_file_to_s3)
+from pathlib import Path
+
+from utils import connector
 
 
 def execute_sql_from_file(file_path: str) -> pd.DataFrame:
@@ -16,7 +18,7 @@ def execute_sql_from_file(file_path: str) -> pd.DataFrame:
     Raises:
         mysql.Error: If there is an error executing the SQL queries.
     """
-    cnx, cur = connector(user='root', host='localhost', db='inventory_processed_db')
+    cnx, cur = connector(db='inventory_processed_db')
     with open(file_path, 'r') as sql_file:
         sql = sql_file.read()
     try:
@@ -35,8 +37,6 @@ def process():
     Execute SQL script to join tables, load data into a Pandas DataFrame, 
     and upload the resulting DataFrame to an S3 bucket.
     """
-    sql_script = 'src/join_tables.sql'
+    sql_script = Path('src/forecast_extraction.sql')
     df = execute_sql_from_file(sql_script)
-    return upload_file_to_s3(df=df, filename='inventory_data', bucket='test-d2p-bucket')
-
-process()
+    return df

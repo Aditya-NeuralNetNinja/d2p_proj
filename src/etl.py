@@ -1,7 +1,7 @@
 # Imports
 import pandas as pd
-from utils import get_data
 
+from utils import get_data
 
 # Build pandas dataframe with 'timestamp' column datatype change
 df1 = get_data('data/sales.csv')
