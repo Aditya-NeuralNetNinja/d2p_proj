@@ -1,6 +1,7 @@
+from pathlib import Path
+
 import mysql.connector as mysql
 import pandas as pd
-from pathlib import Path
 
 from utils import connector
 
