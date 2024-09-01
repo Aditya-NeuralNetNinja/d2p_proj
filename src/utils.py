@@ -28,9 +28,9 @@ def connector(db:Optional[str]=None) -> Tuple[mysql.MySQLConnection, mysql.curso
 
     """
     load_dotenv()
-    cnx = mysql.connect(user=os.getenv("USER"),
+    cnx = mysql.connect(user=os.getenv("MY_SQL_SERVER_USER"),
                         password=os.getenv('MySQL_Server_Password'),
-                        host=os.getenv("HOST"),
+                        host=os.getenv("DB_HOST"),
                         db=db)
     cur = cnx.cursor()
     return cnx, cur
@@ -82,7 +82,7 @@ def build_schema(df:DataFrame) -> Tuple[str, str]:
     """
     column_dtypes = []
     for col_name in df.columns:
-        print(col_name, df[col_name].dtype)
+        # print(col_name, df[col_name].dtype)
         col_name = col_name.replace('.', '_')  # tackle edge case
         if df[col_name].dtype == 'object':
             data_type = 'VARCHAR(255)'

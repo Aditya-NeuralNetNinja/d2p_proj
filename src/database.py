@@ -46,8 +46,8 @@ if args.db_exists:
 
 else:
     # define variables
-    # config_import = config[args.task_id]["import"]
-    config_import = config["upload-to-database"]["import"]
+    config_import = config[args.task_name]["import"]
+    # config_import = config["upload-to-database"]["import"]
     for i in range(len(config_import)):
         data = Path(config_import[i]["import"]["dirpath"],
                     config_import[i]["import"]["prefix_filename"] + '.' +
@@ -65,7 +65,7 @@ else:
 
         # STEP 6 - Insert Data into Table
         counts = ingest_data(cur=cur, cnx=cnx, df=df, table=table_name, placeholders=placeholders)
-        print(f'{counts} rows inserted')
+        print(f'{counts} rows inserted in table {table_name}')
         
 # STEP 7 - Close cursor, connection
 cur.close()

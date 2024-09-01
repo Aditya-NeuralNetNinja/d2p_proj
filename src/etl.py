@@ -1,4 +1,6 @@
 # Imports
+import os
+
 import pandas as pd
 
 from utils import get_data
@@ -67,3 +69,5 @@ temp_df = aggregate(df3_hourly, 'timestamp', 'temperature', 'mean')  # No second
 sales_df.to_csv('data/sales_processed.csv', index=False)
 sensor_df.to_csv('data/stock_processed.csv', index=False)
 temp_df.to_csv('data/temp_processed.csv', index=False)
+
+print(f'ETL Processed: {[i for i in os.listdir("data/") if "_processed" in i]}')

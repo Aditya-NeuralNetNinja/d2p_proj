@@ -4,22 +4,30 @@ upload-to-database:
     - import:
         dirpath: ./data/
         file_extension: csv 
-        prefix_filename: supermarket_sales
+        prefix_filename: sales
+    - import:
+        dirpath: ./data/
+        file_extension: csv 
+        prefix_filename: sensor_stock_levels
+    - import:
+        dirpath: ./data/
+        file_extension: csv 
+        prefix_filename: sensor_storage_temperature
 
 cleaned-upload-to-database:
   import:
     - import:
         dirpath: ./data/
         file_extension: csv 
-        prefix_filename: table1
+        prefix_filename: sales_processed
     - import:
         dirpath: ./data/
         file_extension: csv 
-        prefix_filename: table2
+        prefix_filename: stock_processed
     - import:
         dirpath: ./data/
         file_extension: csv 
-        prefix_filename: table3
+        prefix_filename: temp_processed
 
 data_extraction:
   export:
