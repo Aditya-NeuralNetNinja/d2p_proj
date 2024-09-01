@@ -22,4 +22,4 @@ echo "\n.......Extracting data & uploading to S3......."
 python3 main.py -t data_extraction
 
 echo "\n.......Running modelling & uploading to gsheet......."
-python3 main.py -t modeling
+python3 main.py -t modelling

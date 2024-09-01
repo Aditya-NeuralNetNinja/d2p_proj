@@ -3,7 +3,7 @@ from pathlib import Path
 import mysql.connector as mysql
 import pandas as pd
 
-from utils import connector
+from src.utils import connector
 
 
 def execute_sql_from_file(file_path: str) -> pd.DataFrame:
@@ -19,7 +19,7 @@ def execute_sql_from_file(file_path: str) -> pd.DataFrame:
     Raises:
         mysql.Error: If there is an error executing the SQL queries.
     """
-    cnx, cur = connector(db='inventory_processed_db')
+    cnx, cur = connector(db='processed_inventory_data')
     with open(file_path, 'r') as sql_file:
         sql = sql_file.read()
     try:

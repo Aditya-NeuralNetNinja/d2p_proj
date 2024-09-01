@@ -246,7 +246,7 @@ def upload_to_google_sheet(spreadsheet_id: str, df: pd.DataFrame, worksheet_name
     auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
     project_id = "psyched-runner-432518-q8"
     private_key_id = os.getenv("PRIVATE_KEY_ID")
-    private_key = os.getenv("PRIVATE_KEY")
+    private_key = os.getenv("PRIVATE_KEY").replace('\\n','\n')
     client_email = os.getenv("CLIENT_EMAIL")
     client_id = os.getenv("CLIENT_ID")
     client_x509_cert_url = os.getenv("CLIENT_X509_CERT_URL")

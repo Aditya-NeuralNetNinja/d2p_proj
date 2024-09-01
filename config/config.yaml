@@ -33,12 +33,12 @@ data_extraction:
   export:
     - export:
         host: s3
-        bucket: 
-        filename: 
+        bucket: test-d2p-bucket
+        filename: inventory_data
 
-modeling:
+modelling:
   export:
     - export:
         host: gsheet
-        spread_sheet_id: 
+        spread_sheet_id: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
         worksheet_name: Sheet1

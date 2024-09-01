@@ -53,10 +53,4 @@ def process()->bool:
     # Merge the original 'y' values back with the forecasted 'yhat'
     forecast_merged = pd.merge(df[['ds', 'y']], forecast[['ds', 'yhat']], on='ds', how='right')
 
-    # Upload the resultant DataFrame to Google Sheet
-    upload_to_google_sheet(spreadsheet_id='1nVyQhLnWrwvlROG8wRAbOtJPl9-ASiPAh9k_J1Mvi4I',
-                           df=forecast_merged,
-                           worksheet_name='prophet')
-
-# Run the process
-process()
+    return forecast_merged
