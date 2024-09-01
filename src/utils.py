@@ -28,7 +28,7 @@ def connector(db:Optional[str]=None) -> Tuple[mysql.MySQLConnection, mysql.curso
 
     """
     load_dotenv()
-    cnx = mysql.connect(user=os.getenv("MY_SQL_SERVER_USER"),
+    cnx = mysql.connect(user=os.getenv("MYSQL_SERVER_USER"),
                         password=os.getenv('MySQL_Server_Password'),
                         host=os.getenv("DB_HOST"),
                         db=db)
