@@ -1,8 +1,6 @@
 # Imports
 import os
-
 import pandas as pd
-
 from utils import get_data
 
 # Build pandas dataframe with 'timestamp' column datatype change
@@ -30,7 +28,6 @@ def convert_timestamp_to_hourly(df: pd.DataFrame = None, column: str = None) -> 
 
 
 # Create separate dataframe + aggregation
-# Create separate dataframe + aggregation
 def aggregate(df: pd.DataFrame, col1: str, aggregate_col: str, operation: str, col2: str = None) -> pd.DataFrame:
     """
     Performs a groupby and aggregation operation on a pandas DataFrame.
@@ -53,13 +50,11 @@ def aggregate(df: pd.DataFrame, col1: str, aggregate_col: str, operation: str, c
     return df_new
 
 
-
 # Using convert_timestamp_to_hourly function
 df1_hourly = convert_timestamp_to_hourly(df1, 'timestamp')
 df2_hourly = convert_timestamp_to_hourly(df2, 'timestamp')
 df3_hourly = convert_timestamp_to_hourly(df3, 'timestamp')
 
-# Using the aggregate function
 # Using the aggregate function
 sales_df = aggregate(df1_hourly, 'timestamp', 'quantity', 'sum', 'product_id')
 sensor_df = aggregate(df2_hourly, 'timestamp', 'estimated_stock_pct', 'mean', 'product_id')
