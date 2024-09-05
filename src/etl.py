@@ -67,7 +67,7 @@ temp_df = aggregate(df3_hourly, 'timestamp', 'temperature', 'mean')  # No second
 
 # extract additional columns from sales data
 product_categories = df1[['product_id', 'category', 'unit_price']].drop_duplicates()
-sales_merged_df = merged_df.merge(product_categories, on="product_id", how="left")
+sales_merged_df = sales_df.merge(product_categories, on="product_id", how="left")
 
 # Export processed files to CSV format
 sales_merged_df.to_csv('data/sales_processed.csv', index=False)
