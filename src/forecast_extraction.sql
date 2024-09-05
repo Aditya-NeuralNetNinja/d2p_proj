@@ -1,8 +1,7 @@
 SELECT 
-    a.timestamp,
     a.product_id,
     a.estimated_stock_pct,
-    b.quantity,
+    b.*
     c.temperature
 FROM inventory_processed_db.stock_processed a
 LEFT JOIN inventory_processed_db.sales_processed b
