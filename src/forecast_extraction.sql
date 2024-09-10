@@ -1,5 +1,5 @@
 SELECT 
-	a.timestamp,
+    a.timestamp,
     a.product_id,
     a.estimated_stock_pct,
     a.category,
