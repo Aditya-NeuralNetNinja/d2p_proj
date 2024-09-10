@@ -1,8 +1,6 @@
-from pathlib import Path
-
 import mysql.connector as mysql
 import pandas as pd
-
+from pathlib import Path
 from src.utils import connector
 
 
@@ -33,11 +31,17 @@ def execute_sql_from_file(file_path: str) -> pd.DataFrame:
         raise mysql.Error(f"Error executing SQL query: {err}")
     
 
-def process():
+def process()->pd.DataFrame:
     """
-    Execute SQL script to join tables, load data into a Pandas DataFrame, 
-    and upload the resulting DataFrame to an S3 bucket.
+    Execute SQL script to join tables
+    and load data into a Pandas DataFrame.
+
+    Returns:
+        pd.DataFrame: Resultant DataFrame
     """
     sql_script = Path('src/forecast_extraction.sql')
     df = execute_sql_from_file(sql_script)
     return df
+
+
+process()
