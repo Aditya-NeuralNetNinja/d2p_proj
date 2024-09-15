@@ -1,20 +1,20 @@
 # Imports
-import os
+import importlib
 import io
+import os
 from typing import Optional, Tuple
-from pandas import DataFrame
-import pandas as pd
-import mysql.connector as mysql
-from dotenv import load_dotenv
+
 import boto3
 import gspread
+import mysql.connector as mysql
+import pandas as pd
+from dotenv import load_dotenv
 from oauth2client.service_account import ServiceAccountCredentials
+from pandas import DataFrame
 
 
 # STEP 1 - Connect to server
-def connector(user:str,
-              host:str,
-              db:Optional[str]=None) -> Tuple[mysql.MySQLConnection, mysql.cursor.MySQLCursor]:
+def connector(db:Optional[str]=None) -> Tuple[mysql.MySQLConnection, mysql.cursor.MySQLCursor]:
     """
     Connect via python to mysql server
 
@@ -28,9 +28,9 @@ def connector(user:str,
 
     """
     load_dotenv()
-    cnx = mysql.connect(user=user,
+    cnx = mysql.connect(user=os.getenv("MYSQL_SERVER_USER"),
                         password=os.getenv('MySQL_Server_Password'),
-                        host=host,
+                        host=os.getenv("DB_HOST"),
                         db=db)
     cur = cnx.cursor()
     return cnx, cur
@@ -82,7 +82,7 @@ def build_schema(df:DataFrame) -> Tuple[str, str]:
     """
     column_dtypes = []
     for col_name in df.columns:
-        print(col_name, df[col_name].dtype)
+        # print(col_name, df[col_name].dtype)
         col_name = col_name.replace('.', '_')  # tackle edge case
         if df[col_name].dtype == 'object':
             data_type = 'VARCHAR(255)'
@@ -246,7 +246,7 @@ def upload_to_google_sheet(spreadsheet_id: str, df: pd.DataFrame, worksheet_name
     auth_provider_x509_cert_url = "https://www.googleapis.com/oauth2/v1/certs"
     project_id = "psyched-runner-432518-q8"
     private_key_id = os.getenv("PRIVATE_KEY_ID")
-    private_key = os.getenv("PRIVATE_KEY")
+    private_key = os.getenv("PRIVATE_KEY").replace('\\n','\n')
     client_email = os.getenv("CLIENT_EMAIL")
     client_id = os.getenv("CLIENT_ID")
     client_x509_cert_url = os.getenv("CLIENT_X509_CERT_URL")
@@ -285,3 +285,13 @@ def upload_to_google_sheet(spreadsheet_id: str, df: pd.DataFrame, worksheet_name
         return True
     else:
         return False
+    
+def process_task(task: str) -> dict:
+    """Import task file to process the data from src/tools folder
+    Args:
+        task (str): name of the task to process
+    Returns:
+        dict: processed_data
+    """
+    lib = importlib.import_module(f"src.{task}")
+    return lib.process()

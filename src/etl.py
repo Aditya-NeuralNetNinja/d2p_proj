@@ -1,7 +1,7 @@
 # Imports
+import os
 import pandas as pd
 from utils import get_data
-
 
 # Build pandas dataframe with 'timestamp' column datatype change
 df1 = get_data('data/sales.csv')
@@ -28,7 +28,6 @@ def convert_timestamp_to_hourly(df: pd.DataFrame = None, column: str = None) -> 
 
 
 # Create separate dataframe + aggregation
-# Create separate dataframe + aggregation
 def aggregate(df: pd.DataFrame, col1: str, aggregate_col: str, operation: str, col2: str = None) -> pd.DataFrame:
     """
     Performs a groupby and aggregation operation on a pandas DataFrame.
@@ -51,19 +50,31 @@ def aggregate(df: pd.DataFrame, col1: str, aggregate_col: str, operation: str, c
     return df_new
 
 
-
 # Using convert_timestamp_to_hourly function
 df1_hourly = convert_timestamp_to_hourly(df1, 'timestamp')
 df2_hourly = convert_timestamp_to_hourly(df2, 'timestamp')
 df3_hourly = convert_timestamp_to_hourly(df3, 'timestamp')
 
 # Using the aggregate function
-# Using the aggregate function
 sales_df = aggregate(df1_hourly, 'timestamp', 'quantity', 'sum', 'product_id')
 sensor_df = aggregate(df2_hourly, 'timestamp', 'estimated_stock_pct', 'mean', 'product_id')
 temp_df = aggregate(df3_hourly, 'timestamp', 'temperature', 'mean')  # No second column, do not pass 'col2'
+
+# extract additional columns from sales data
+product_categories = df1[['product_id', 'category']]
+product_price = df1[['product_id', 'unit_price']]
+
+# drop duplicates
+product_categories = product_categories.drop_duplicates()
+product_price = product_price.drop_duplicates()
+
+# combine with stock data
+merged_df = sensor_df.merge(product_categories, on="product_id", how="left")
+sensor_df = merged_df.merge(product_price, on="product_id", how="left")
 
 # Export processed files to CSV format
 sales_df.to_csv('data/sales_processed.csv', index=False)
 sensor_df.to_csv('data/stock_processed.csv', index=False)
 temp_df.to_csv('data/temp_processed.csv', index=False)
+
+print(f'ETL Processed: {[i for i in os.listdir("data/") if "_processed" in i]}')
