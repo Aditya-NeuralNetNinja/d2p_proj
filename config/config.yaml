@@ -2,30 +2,30 @@
 upload-to-database:
   import:
     - import:
-        dirpath: ./data/
+        dirpath: ./data/raw/
         file_extension: csv 
         prefix_filename: sales
     - import:
-        dirpath: ./data/
+        dirpath: ./data/raw/
         file_extension: csv 
         prefix_filename: sensor_stock_levels
     - import:
-        dirpath: ./data/
+        dirpath: ./data/raw/
         file_extension: csv 
         prefix_filename: sensor_storage_temperature
 
 cleaned-upload-to-database:
   import:
     - import:
-        dirpath: ./data/
+        dirpath: ./data/processed/
         file_extension: csv 
         prefix_filename: sales_processed
     - import:
-        dirpath: ./data/
+        dirpath: ./data/processed/
         file_extension: csv 
         prefix_filename: stock_processed
     - import:
-        dirpath: ./data/
+        dirpath: ./data/processed/
         file_extension: csv 
         prefix_filename: temp_processed
 
@@ -36,9 +36,24 @@ data_extraction:
         bucket: test-d2p-bucket
         filename: inventory_data
 
-modelling:
+modeling:
+  # Prophet model
   export:
     - export:
         host: gsheet
         spread_sheet_id: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
         worksheet_name: Sheet1
+
+  # RF Model
+  export:
+    - export:
+        host: gsheet
+        bucket: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
+        filename: Sheet2
+
+  # XGBoost model
+  export:
+    - export:
+        host: gsheet
+        spread_sheet_id: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
+        worksheet_name: Sheet3

@@ -5,7 +5,7 @@ from src.utils import (upload_file_to_s3,
                        upload_to_google_sheet)
 
 args = argparse.ArgumentParser(
-    description="Provies some inforamtion on the job to process"
+    description="Provides some inforamtion on the job to process"
 )
 args.add_argument(
     "-t", "--task", type=str, required=True,

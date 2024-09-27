@@ -4,9 +4,9 @@ import pandas as pd
 from utils import get_data
 
 # Build pandas dataframe with 'timestamp' column datatype change
-df1 = get_data('data/sales.csv')
-df2 = get_data('data/sensor_stock_levels.csv')
-df3 = get_data('data/sensor_storage_temperature.csv')
+df1 = get_data('data/raw/sales.csv')
+df2 = get_data('data/raw/sensor_stock_levels.csv')
+df3 = get_data('data/raw/sensor_storage_temperature.csv')
 
 
 # Convert timestamp to hourly level
@@ -73,8 +73,8 @@ merged_df = sensor_df.merge(product_categories, on="product_id", how="left")
 sensor_df = merged_df.merge(product_price, on="product_id", how="left")
 
 # Export processed files to CSV format
-sales_df.to_csv('data/sales_processed.csv', index=False)
-sensor_df.to_csv('data/stock_processed.csv', index=False)
-temp_df.to_csv('data/temp_processed.csv', index=False)
+sales_df.to_csv('data/processed/sales_processed.csv', index=False)
+sensor_df.to_csv('data/processed/stock_processed.csv', index=False)
+temp_df.to_csv('data/processed/temp_processed.csv', index=False)
 
-print(f'ETL Processed: {[i for i in os.listdir("data/") if "_processed" in i]}')
+print(f'ETL Processed: {[i for i in os.listdir("data/processed/") if "_processed" in i]}')
