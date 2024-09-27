@@ -11,3 +11,5 @@ oauth2client
 google-api-python-client
 PyYAML
 pytest
+xgboost
+scikit-learn
