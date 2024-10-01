@@ -10,7 +10,8 @@ def input_file():
     Returns:
         str: Path to the input CSV file.
     """
-    return 'data/inventory_data.csv'  
+    return 'data/processed/inventory_data.csv'  
+
 
 @pytest.fixture
 def expected_columns():

@@ -1,7 +1,7 @@
 # Imports
 import os
 import pandas as pd
-from utils import get_data
+from src.utils import get_data
 
 # Build pandas dataframe with 'timestamp' column datatype change
 df1 = get_data('data/raw/sales.csv')
@@ -22,7 +22,7 @@ def convert_timestamp_to_hourly(df: pd.DataFrame = None, column: str = None) -> 
         DataFrame: resultant dataframe with hourly timestamps.
     """
     dummy = df.copy()
-    dummy[column] = pd.to_datetime(dummy[column], format='%Y-%m-%d %H:%M:%S')  # String to datetime datatype conversion
+    dummy[column] = pd.to_datetime(dummy[column], format='%Y-%m-%d %H:%M:%S', errors='coerce')  # String to datetime datatype conversion
     dummy[column] = dummy[column].dt.floor('h')  # Truncate timestamps to beginning of hour
     return dummy
 
