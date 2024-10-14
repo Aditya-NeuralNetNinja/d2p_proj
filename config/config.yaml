@@ -44,16 +44,16 @@ modeling:
         spread_sheet_id: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
         worksheet_name: Sheet1
 
-  # RF Model
-  export:
-    - export:
-        host: gsheet
-        bucket: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
-        filename: Sheet2
+  # # RF Model
+  # export:
+  #   - export:
+  #       host: gsheet
+  #       bucket: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
+  #       filename: Sheet2
 
-  # XGBoost model
-  export:
-    - export:
-        host: gsheet
-        spread_sheet_id: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
-        worksheet_name: Sheet3
+  # # XGBoost model
+  # export:
+  #   - export:
+  #       host: gsheet
+  #       spread_sheet_id: 1GNa-KZ9tLXF_a5rxaSQra8HwnKpVgq-5OtIMOVUHiWk
+  #       worksheet_name: Sheet3
