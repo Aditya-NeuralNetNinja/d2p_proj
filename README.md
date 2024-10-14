@@ -1,1 +1,2 @@
-# d2p_project
+# Inventory Forecasting System
+
