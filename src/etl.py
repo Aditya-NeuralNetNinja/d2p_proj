@@ -61,19 +61,14 @@ sensor_df = aggregate(df2_hourly, 'timestamp', 'estimated_stock_pct', 'mean', 'p
 temp_df = aggregate(df3_hourly, 'timestamp', 'temperature', 'mean')  # No second column, do not pass 'col2'
 
 # extract additional columns from sales data
-product_categories = df1[['product_id', 'category']]
-product_price = df1[['product_id', 'unit_price']]
+product_category = sales_df[['product_id','category','unit_price']].drop_duplicates()
+sales_agg_merged = sales_df.merge(product_category, on= 'product_id',how='left')
+sales_agg_merged.to_csv('data/processed/sales_processed.csv', index=False)
 
-# drop duplicates
-product_categories = product_categories.drop_duplicates()
-product_price = product_price.drop_duplicates()
-
-# combine with stock data
-merged_df = sensor_df.merge(product_categories, on="product_id", how="left")
-sensor_df = merged_df.merge(product_price, on="product_id", how="left")
+sensor_agg_merged = sensor_df.merge(product_categories, on="product_id", how="left")
+sensor_agg_merged.to_csv('data/processed/stock_processed.csv', index=False)
 
 # Export processed files to CSV format
-sales_df.to_csv('data/processed/sales_processed.csv', index=False)
 sensor_df.to_csv('data/processed/stock_processed.csv', index=False)
 temp_df.to_csv('data/processed/temp_processed.csv', index=False)
 
