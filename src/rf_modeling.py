@@ -2,263 +2,158 @@ import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
 from utils import read_file_of_s3, upload_to_google_sheet
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from src.utils import convert_timestamp_to_hourly, download_from_s3, gcp
+
 
 bucket_name = 'test-d2p-bucket'
 object_name = 'inventory_data.csv'
 
-# Category grouping dictionary
-category_grouping = {
-    'dairy': 'Dairy Products',
-    'cheese': 'Dairy Products',
-    'baking': 'Dairy Products',
-    'baked goods': 'Packaged Goods',
-    'fruit': 'Fresh Produce',
-    'vegetables': 'Fresh Produce',
-    'packaged foods': 'Packaged Goods',
-    'canned foods': 'Packaged Goods',
-    'snacks': 'Packaged Goods',
-    'frozen': 'Frozen and Refrigerated',
-    'refrigerated items': 'Frozen and Refrigerated',
-    'meat': 'Frozen and Refrigerated',
-    'seafood': 'Frozen and Refrigerated',
-    'condiments and sauces': 'Condiments and Spices',
-    'spices and herbs': 'Condiments and Spices',
-    'cleaning products': 'Household and Personal Care',
-    'personal care': 'Household and Personal Care',
-    'medicine': 'Household and Personal Care',
-    'kitchen': 'Household and Personal Care',
-    'beverages': 'Packaged Goods',
-    'baby products': 'Packaged Goods',
-    'pets': 'Household and Personal Care'
-}
 
-def feature_engineering(df: pd.DataFrame, lags: list) -> pd.DataFrame:
-    """
-    Performs feature engineering on the input dataframe by generating lag features,
-    filling missing values, and creating categorical and time-based features.
+def feature_engg(data):
+  """
+  Performs feature engineering on the input dataset, including date extraction, categorical encoding, and filtering.
+  Parameters
+  ----------
+  data : The input dataset containing a 'category' column, a 'timestamp' column, and other relevant features.
+  
+  Returns
+  -------
+  The transformed data with the following changes:
+        - Rows with 'category' equal to 'spices and herbs' are removed.
+        - The 'timestamp' column is converted to datetime format, and additional columns 'day', 'month', and 'year' are created based on the 'timestamp'.
+        - The 'category' column is one-hot encoded (excluding the first category to avoid multicollinearity).
+        - Missing values in the dataset are filled with 0.
+  """
+  data =  data[~data['category'].isin(['spices and herbs'])]
+  # Convert 'timestamp' to datetime format
+  data['timestamp'] = pd.to_datetime(data['timestamp'])
+  
+  # Create new features: 'day', 'month', 'year'
+  data['day'] = data['timestamp'].dt.day
+  data['month'] = data['timestamp'].dt.month
+  data['year'] = data['timestamp'].dt.year
+  data['hour'] = data['timestamp'].dt.hour
+  
+  # Create dummy variables for 'category' column
+  data = pd.get_dummies(data, columns=['category'], drop_first=True)
+  return data.fillna(0)
+
+
+def split_data(data):
+  """
+  Splits the input data into training and testing sets for model development, excluding certain columns.
+  Parameters
+  ----------
+  data : The input dataset containing features and target variables
+
+  Returns
+  -------
+  X_train : Training set features.
     
-    Args:
-        df (pd.DataFrame): Input dataframe containing historical data.
-        lags (list): List of time lags to generate lagged features for the target column.
-
-    Returns:
-        pd.DataFrame: DataFrame with lagged features, dummies for categories, and time-based features.
-    """
-    # Fill missing values in 'quantity' column
-    df['quantity'] = df['quantity'].fillna(df['quantity'].median())
+    X_test : Testing set features.
     
-    # Create lagged features
-    for lag in lags:
-        df[f'estimated_stock_pct_lag_{lag}'] = df['estimated_stock_pct'].shift(lag)
-        
-    # Map categories to grouped categories
-    df['grouped_category'] = df['category'].replace(category_grouping)
-
-    # Create dummy variables for grouped categories
-    category_dummies = pd.get_dummies(df['grouped_category'], prefix='category')
-    df = pd.concat([df, category_dummies], axis=1)
+    y_train : Training set target variable ('estimated_stock_pct').
     
-    # Time-based features
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    df['month'] = df['timestamp'].dt.month
-    df['day'] = df['timestamp'].dt.day
-    df['hour'] = df['timestamp'].dt.hour
-    df['day_of_week'] = df['timestamp'].dt.dayofweek
-    df['is_weekend'] = (df['day_of_week'] >= 5).astype(int)
+    y_test : Testing set target variable ('estimated_stock_pct').
+  """
+  # Define target and features
+  X = data.drop(columns=['estimated_stock_pct','timestamp', 'product_id'])
+  y = data['estimated_stock_pct']
+  
+  # Split data into train and test sets
+  X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+  return X_train, X_test, y_train, y_test
+
+
+def rf_mod(X_train, X_test, y_train, y_test):
+  """Trains a Random Forest Regressor model on the provided training data, scales the features, and evaluates the model using RMSE on the test set.
+
+  Parameters
+  ----------
+  X_train : The training input samples.
+  X_test : The testing input samples for which predictions are made.
+  y_train : The target values for training the model.
+  y_test : The target values for evaluating the model's predictions.
+
+  Returns
+  -------
+  The trained Random Forest model.
+  The fitted StandardScaler used to transform the data.
+  Predicted target values for the test set.
+  """
+  rf_model = RandomForestRegressor(n_estimators=100, random_state=42)
+
+  scaler = StandardScaler()
+  X_train_scaled = scaler.fit_transform(X_train)
+  X_test_scaled = scaler.transform(X_test)
+
+  rf_model.fit(X_train_scaled, y_train)
+
+  # Make predictions on the test set
+  y_pred = rf_model.predict(X_test_scaled)
+  rmse = np.sqrt(mean_squared_error(y_test, y_pred)) #or use mae
+  print(f"RMSE: {rmse}")
+  return rf_model, scaler, y_pred
+
+
+def forecast_for_three_months(data):
+  """
+  Function to forecast for the next three months on the hourly basis .
+  Parameters
+  ----------
+  data : The historical data required to forecast.
+
+  Returns
+  -------
+  Returns forecasted data after applying the RandomForestRegressor Model.
+  """
+  # Generate future dates (e.g., for 3 months)
+  future_dates = pd.date_range(start=data['timestamp'].max(), periods=90, freq='D')
+  future_data = pd.DataFrame(future_dates, columns=['timestamp'])
+  future_data['timestamp'] = convert_timestamp_to_hourly(future_data,'timestamp') #conveting to hourly basis
+  
+  # Assuming the product ID, unit_price, and temperature remain consistent, use the median or mode from historical data
+  future_data['product_id'] = data['product_id']
+  future_data = future_data.merge(data,how='inner',on='product_id')\
+                           .drop(['timestamp_y','estimated_stock_pct','temperature'],axis=1)\
+                            .rename(columns={'timestamp_x':'timestamp'})
     
-    # Forward fill missing values and then backward fill any remaining missing values
-    df = df.ffill().bfill()
-    
-    return df
+  future_data['quantity'] = 0  # Assuming no future sales
+  future_data['temperature'] = data['temperature'].median()  # Adjust as needed
+  
+  # Add forecast flag
+  future_data['is_forecast'] = True  
+  return  future_data
 
-def split_data(df: pd.DataFrame, target: str) -> tuple:
-    """
-    Splits the data into training and testing sets based on a specific date.
 
-    Args:
-        df (pd.DataFrame): Input dataframe.
-        target (str): Target column for prediction.
+def process():
+  """Function Run whole script step by step
+  """
+  # step 1: download s3
+  s3_df = download_from_s3(bucket=bucket_name, key_name = object_name)
+  
+  # step 2
+  df_feat = feature_engg(s3_df)
+  
+  # step 3
+  X_train, X_test, y_train, y_test =split_data(df_feat)
+  print(X_train.shape, X_test.shape, y_train.shape, y_test.shape)
+  
+  # step 4
+  rf_model, scaler, y_pred = rf_mod(X_train, X_test, y_train, y_test)
+  future_data = forecast_for_three_months(s3_df)
+  future_data = feature_engg(future_data).drop(columns=['product_id','timestamp'])
+  forecast_pred = rf_model.predict(scaler.transform(future_data[X_train.columns]))
+  future_data['estimated_stock_pct'] = forecast_pred
+  final_data = pd.concat([df_feat.drop(columns=['timestamp','product_id']), future_data], ignore_index=True) # historical + forecast
 
-    Returns:
-        tuple: Returns X_train, X_test, y_train, y_test dataframes.
-    """
-
-    # Split data into train and test sets
-    train_data = df[df['timestamp'] < '2022-03-06']
-    test_data = df[df['timestamp'] >= '2022-03-06']
-
-    # Split target variable
-    y_train = train_data[target]
-    y_test = test_data[target]
-
-    # Drop unnecessary columns from train and test dataframes
-    X_train = train_data.drop([target, 'product_id', 'timestamp', 'category', 'grouped_category'], axis=1)
-    X_test = test_data.drop([target, 'product_id', 'timestamp', 'category', 'grouped_category'], axis=1)
-
-    return X_train, X_test, y_train, y_test
-
-def build_random_forest_model(X_train: pd.DataFrame, y_train: pd.Series) -> RandomForestRegressor:
-    """
-    Builds and trains a Random Forest regression model on the training data.
-
-    Args:
-        X_train (pd.DataFrame): Training feature data.
-        y_train (pd.Series): Training target data.
-
-    Returns:
-        RandomForestRegressor: Trained Random Forest model.
-    """
-
-    # Build and train Random Forest model
-    model = RandomForestRegressor(n_estimators=100, random_state=42)
-    model.fit(X_train, y_train)
-
-    return model
-
-def forecast_next_3_months(df: pd.DataFrame, model: RandomForestRegressor) -> pd.DataFrame:
-    """
-    Generates feature data for future timestamps and makes predictions using the trained Random Forest model.
-
-    Args:
-        df (pd.DataFrame): Historical dataframe for reference.
-        model (RandomForestRegressor): Trained Random Forest model.
-
-    Returns:
-        pd.DataFrame: Dataframe containing future timestamps and predicted values.
-    """
-
-    # Ensure timestamp is in datetime format
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-    
-    # Generate feature data for future timestamps
-    future_dates = pd.date_range(start=df['timestamp'].max(), periods=90, freq='h')
-
-    product_info = df[['product_id', 'category']].drop_duplicates().set_index('product_id')
-    
-    future_data = pd.DataFrame([(date, pid) for date in future_dates for pid in product_info.index],
-                               columns=['timestamp', 'product_id'])
-
-    # Add category information
-    future_data['category'] = future_data['product_id'].map(product_info['category'])
-
-    # For each product, use the most recent unit price
-    last_prices = df.groupby('product_id')['unit_price'].last()
-    future_data['unit_price'] = future_data['product_id'].map(last_prices)
-    
-    # Use the average historical quantity sold for each product
-    avg_quantities = df.groupby('product_id')['quantity'].mean()
-    future_data['quantity'] = future_data['product_id'].map(avg_quantities)
-    
-    # For temperature, use the average temperature for each hour of the day and month
-    temp_avg = df.groupby([df['timestamp'].dt.month, df['timestamp'].dt.hour])['temperature'].mean()
-    overall_mean_temp = df['temperature'].mean()
-
-    def get_temperature(row):
-        try:
-            return temp_avg.loc[row['timestamp'].month, row['timestamp'].hour]
-        except KeyError:
-            return overall_mean_temp
-
-    future_data['temperature'] = future_data.apply(get_temperature, axis=1)
-    
-    # Create lag features for estimated stock percentage
-    for lag in [1, 2, 3, 6, 12, 24]:
-        col_name = f'estimated_stock_pct_lag_{lag}'
-
-        # Compute the lagged features for the original dataframe if not present
-        if col_name not in df.columns:
-            df[col_name] = df.groupby('product_id')['estimated_stock_pct'].shift(lag)
-
-        last_stock = df.groupby('product_id')[col_name].last()
-        future_data[col_name] = future_data['product_id'].map(last_stock)
-
-    # Add grouped category
-    future_data['grouped_category'] = future_data['category'].replace(category_grouping)
-
-    category_dummies_future = pd.get_dummies(future_data['grouped_category'], prefix='category')
-
-    future_data = pd.concat([future_data, category_dummies_future], axis=1)
-
-    bool_columns = ['category_Condiments and Spices', 'category_Dairy Products', 'category_Fresh Produce',
-                'category_Frozen and Refrigerated', 'category_Household and Personal Care', 'category_Packaged Goods']
-
-    future_data[bool_columns] = future_data[bool_columns].astype(int)
-
-    # Time-based features
-    future_data['timestamp'] = pd.to_datetime(future_data['timestamp'])
-    future_data['month'] = future_data['timestamp'].dt.month
-    future_data['day'] = future_data['timestamp'].dt.day
-    future_data['hour'] = future_data['timestamp'].dt.hour
-    future_data['day_of_week'] = future_data['timestamp'].dt.dayofweek
-    future_data['is_weekend'] = (future_data['day_of_week'] >= 5).astype(int)
-    
-    # Forward fill missing values
-    future_data = future_data.ffill()
-    
-    # Drop unnecessary columns
-    X_future = future_data.drop(['timestamp', 'product_id', 'category', 'grouped_category'], axis=1)
-
-    # Make predictions using trained model
-    future_data['estimated_stock_pct'] = model.predict(X_future)
-
-    return future_data
-
-def process(df: pd.DataFrame, target: str, lags: list) -> pd.DataFrame:
-    """
-    Orchestrates the complete process: feature engineering, data splitting, model training,
-    forecasting, and merging of historical and forecasted data.
-
-    Args:
-        df (pd.DataFrame): Input dataframe.
-        target (str): Target column for prediction.
-        lags (list): List of lag features to create for the target column.
-
-    Returns:
-        pd.DataFrame: Merged dataframe with historical and forecasted predictions.
-    """
-
-    df['timestamp'] = pd.to_datetime(df['timestamp'])
-
-    # Perform feature engineering
-    df_lagged = feature_engineering(df, lags)
-
-    # Split data into train and test sets
-    X_train, X_test, y_train, y_test = split_data(df_lagged, target)
-
-    # Build and train XGBoost model
-    model = build_random_forest_model(X_train, y_train)
-
-    # Forecast next 3 months
-    future_predictions = forecast_next_3_months(df, model)
-    
-    # Merge historical and forecasted dataframes
-    merged_df = pd.concat([df_lagged, future_predictions], axis=0).reset_index(drop=True)
-
-    # Create a new column 'is_forecast' to indicate whether the value of estimated_stock_pct is from historical or predicted data
-    mask_historical = merged_df.index < len(df_lagged)
-    merged_df['is_forecast'] = np.where(mask_historical, 0, 1)
-    
-    # Reorder columns to move 'is_forecast' to the immediate right of 'estimated_stock_pct'
-    columns = merged_df.columns.tolist()
-    columns.insert(columns.index('estimated_stock_pct') + 1, columns.pop(columns.index('is_forecast')))
-    merged_df = merged_df.reindex(columns=columns)
-    
-    return merged_df
-
-if __name__ == "__main__":
-    df = read_file_of_s3(bucket_name=bucket_name, filename=object_name)
-    target = 'estimated_stock_pct'
-    lags = [1, 2, 3, 6, 12, 24]
-    
-    # Process the data
-    integrated_df = process(df, target, lags)
-
-    # Save inegrated (historical & predictions) data file locally
-    integrated_df.to_csv('data/predictions/rf_predictions.csv', index=False)
-    
-    # Upload integrated dataframe to google sheet
-    upload_to_google_sheet(spreadsheet_id='1nVyQhLnWrwvlROG8wRAbOtJPl9-ASiPAh9k_J1Mvi4I',
-                           df=integrated_df,
-                           worksheet_name='rf')
-    
-    print('Random Forest modeling script executed successfully!')
+  # cat_df = final_data[final_data.columns[pd.Series(final_data.columns).str.startswith('category_')]]
+  cat_df = final_data.filter(like='category_')
+  final_data['category'] = cat_df.idxmax(axis=1).str.replace('category_','')
+  final_data['timestamp'] = pd.to_datetime(final_data[['year','month','day','hour']])
+  final_df = final_data.drop(columns=cat_df.columns,axis=1).fillna(0)
+  
+  return final_df
