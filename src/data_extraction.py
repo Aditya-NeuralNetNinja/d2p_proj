@@ -42,6 +42,3 @@ def process()->pd.DataFrame:
     sql_script = Path('src/forecast_extraction.sql')
     df = execute_sql_from_file(sql_script)
     return df
-
-
-process()
