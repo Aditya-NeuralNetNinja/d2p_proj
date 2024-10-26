@@ -295,3 +295,20 @@ def process_task(task: str) -> dict:
     """
     lib = importlib.import_module(f"src.{task}")
     return lib.process()
+
+
+def convert_timestamp_to_hourly(df: pd.DataFrame = None, column: str = None) -> pd.DataFrame:
+    """
+    Convert timestamp to hourly level
+
+    Args:
+        df (pd.DataFrame, optional): Input dataframe. Defaults to None.
+        column (str, optional): Column related to datetime data. Defaults to None.
+
+    Returns:
+        DataFrame: resultant dataframe with hourly timestamps.
+    """
+    dummy = df.copy()
+    dummy[column] = pd.to_datetime(dummy[column], format='%Y-%m-%d %H:%M:%S', errors='coerce')  # String to datetime datatype conversion
+    dummy[column] = dummy[column].dt.floor('h')  # Truncate timestamps to beginning of hour
+    return dummy

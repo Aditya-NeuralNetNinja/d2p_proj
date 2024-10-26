@@ -1,7 +1,7 @@
 # Imports
 import os
 import pandas as pd
-from src.utils import get_data
+from utils import get_data
 
 # Build pandas dataframe with 'timestamp' column datatype change
 df1 = get_data('data/raw/sales.csv')
@@ -61,15 +61,15 @@ sensor_df = aggregate(df2_hourly, 'timestamp', 'estimated_stock_pct', 'mean', 'p
 temp_df = aggregate(df3_hourly, 'timestamp', 'temperature', 'mean')  # No second column, do not pass 'col2'
 
 # extract additional columns from sales data
-product_category = sales_df[['product_id','category','unit_price']].drop_duplicates()
+product_category = df1_hourly[['product_id','category','unit_price']].drop_duplicates()
 sales_agg_merged = sales_df.merge(product_category, on= 'product_id',how='left')
-sales_agg_merged.to_csv('data/processed/sales_processed.csv', index=False)
 
-sensor_agg_merged = sensor_df.merge(product_categories, on="product_id", how="left")
-sensor_agg_merged.to_csv('data/processed/stock_processed.csv', index=False)
+
+sensor_agg_merged = sensor_df.merge(product_category, on="product_id", how="left")
 
 # Export processed files to CSV format
-sensor_df.to_csv('data/processed/stock_processed.csv', index=False)
+sensor_agg_merged.to_csv('data/processed/stock_processed.csv', index=False)
 temp_df.to_csv('data/processed/temp_processed.csv', index=False)
+sales_agg_merged.to_csv('data/processed/sales_processed.csv', index=False)
 
 print(f'ETL Processed: {[i for i in os.listdir("data/processed/") if "_processed" in i]}')

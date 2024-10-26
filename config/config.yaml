@@ -36,8 +36,8 @@ data_extraction:
         bucket: test-d2p-bucket
         filename: inventory_data
 
-modeling:
-  # Prophet model
+rf_modeling:
+  # RF model
   export:
     - export:
         host: gsheet

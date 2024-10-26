@@ -1,11 +1,10 @@
 import pandas as pd
 import numpy as np
 from sklearn.ensemble import RandomForestRegressor
-from utils import read_file_of_s3, upload_to_google_sheet
+from src.utils import read_file_of_s3, upload_to_google_sheet, convert_timestamp_to_hourly
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler
-from src.utils import convert_timestamp_to_hourly, download_from_s3, gcp
 
 
 bucket_name = 'test-d2p-bucket'
@@ -133,7 +132,7 @@ def process():
   """Function Run whole script step by step
   """
   # step 1: download s3
-  s3_df = download_from_s3(bucket=bucket_name, key_name = object_name)
+  s3_df = read_file_of_s3(bucket_name=bucket_name, filename = object_name)
   
   # step 2
   df_feat = feature_engg(s3_df)
