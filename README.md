@@ -28,8 +28,6 @@ The **Inventory Forecasting System** is built to predict stock levels with a Mea
 
 ## Architecture
 
-![Workflow](https://github.com/Aditya-NeuralNetNinja/d2p_proj/blob/automation/updated_workflow.svg)
-
 1. **Data Collection**: Multi-source data ingestion.
 2. **ETL Pipeline**: Automated data processing.
 3. **Forecasting Models**: Models like Prophet, XGBoost, and Random Forest for inventory forecasting.
@@ -37,6 +35,8 @@ The **Inventory Forecasting System** is built to predict stock levels with a Mea
 5. **Model Tracking**: MLflow for tracking iterations and metrics.
 6. **Deployment**: Scalable deployment using AWS.
 7. **Visualization**: Real-time insights using Looker Studio (Google Cloud Platform).
+
+![Workflow](https://github.com/Aditya-NeuralNetNinja/d2p_proj/blob/automation/updated_workflow.svg)
 
 ## Technologies
 
