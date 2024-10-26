@@ -61,7 +61,18 @@ The **Inventory Forecasting System** is built to predict stock levels with a Mea
 ### Installation
 
 1. **Clone the GitHub repository**:
-   ```bash
-   git clone https://github.com/Aditya-NeuralNetNinja/d2p_proj.git
-   cd d2p_proj
-    ```
+```bash
+git clone -b automation https://github.com/Aditya-NeuralNetNinja/d2p_proj.git
+cd d2p_proj
+```
+
+2. **Create a Python virtual environment**:
+```bash
+python3 -m venv venv
+source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+```
+
+2. **Install dependencies**:
+```bash
+pip install -r requirements.txt
+```
