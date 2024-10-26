@@ -10,7 +10,6 @@ A robust, machine learning-driven inventory forecasting system designed for reta
 - [Architecture](#architecture)
 - [Technologies](#technologies)
 - [Setup and Installation](#setup-and-installation)
-- [Usage](#usage)
 - [Testing](#testing)
 - [Results](#results)
 - [Future Enhancements](#future-enhancements)
@@ -103,3 +102,11 @@ cd d2p_proj
     ```bash
     bash config/run_pipeline.sh
     ```
+
+## Testing
+Run Pytest: Execute all unit tests.
+    ```bash
+pytest tests/
+    ```
+
+## Results
