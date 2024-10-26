@@ -35,6 +35,8 @@ The **Inventory Forecasting System** is built to predict stock levels with a Mea
 6. **Deployment**: Scalable deployment using AWS.
 7. **Visualization**: Real-time insights using Looker Studio (Google Cloud Platform).
 
+![Workflow](https://github.com/Aditya-NeuralNetNinja/d2p_proj/blob/automation/updated_workflow.svg)
+
 ## Technologies
 
 - **Languages**: Python, SQL
