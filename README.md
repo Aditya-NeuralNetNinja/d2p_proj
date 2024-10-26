@@ -12,7 +12,6 @@ A robust, machine learning-driven inventory forecasting system designed for reta
 - [Setup and Installation](#setup-and-installation)
 - [Testing](#testing)
 - [Results](#results)
-- [Future Enhancements](#future-enhancements)
 
 ## Project Overview
 
