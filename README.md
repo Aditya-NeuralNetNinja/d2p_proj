@@ -98,3 +98,9 @@ cd d2p_proj
    export CLIENT_ID="your_client_id"
    export CLIENT_X509_CERT_URL="your_client_x509_cert_url"
    ```
+
+5. **Deploy ETL pipeline and train the ML models by executing the main script**:
+
+    ```bash
+    bash config/run_pipeline.sh
+    ```
