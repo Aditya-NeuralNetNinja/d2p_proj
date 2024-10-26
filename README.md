@@ -107,7 +107,7 @@ The **Inventory Forecasting System** is built to predict stock levels with a Mea
 ## Testing
 Run Pytest: Execute all unit tests.
     ```bash
-pytest tests/
+    pytest tests/
     ```
 
 ## Results
