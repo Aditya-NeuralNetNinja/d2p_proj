@@ -67,12 +67,34 @@ cd d2p_proj
 ```
 
 2. **Create a Python virtual environment**:
-```bash
-python3 -m venv venv
-source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
-```
+    ```bash
+    python3 -m venv venv
+    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
+    ```
 
-2. **Install dependencies**:
-```bash
-pip install -r requirements.txt
-```
+3. **Install dependencies**:
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+4. **Set up environment variables**:
+
+   Configure the following environment variables for AWS, MySQL, and Google Cloud credentials. Replace placeholder values with your actual credentials.
+
+   ```bash
+   # MySQL Database Configuration
+   export MYSQL_SERVER_USER="your_mysql_user"
+   export MySQL_Server_Password="your_mysql_password"
+   export DB_HOST="your_db_host"
+
+   # AWS Configuration
+   export AWS_ACCESS_KEY_ID="your_aws_access_key"
+   export AWS_SECRET_ACCESS_KEY="your_aws_secret_key"
+
+   # Google Cloud Configuration
+   export PRIVATE_KEY_ID="your_private_key_id"
+   export PRIVATE_KEY="your_private_key"
+   export CLIENT_EMAIL="your_client_email"
+   export CLIENT_ID="your_client_id"
+   export CLIENT_X509_CERT_URL="your_client_x509_cert_url"
+   ```
