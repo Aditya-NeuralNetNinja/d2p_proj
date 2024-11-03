@@ -97,7 +97,7 @@ The **Inventory Forecasting System** is built to predict stock levels with a Mea
    export CLIENT_X509_CERT_URL="your_client_x509_cert_url"
    ```
 
-5. **Run the bash script to automate the ETL pipeline and model training process**:
+5. **Run the bash script to automate the ETL pipeline, model training, prediction & dashboarding process**:
     ```bash
     bash config/run_pipeline.sh
     ```
