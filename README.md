@@ -9,7 +9,7 @@ A robust, machine learning-driven inventory forecasting system designed for reta
 - [Technologies](#technologies)
 - [Setup and Installation](#setup-and-installation)
 - [Testing](#testing)
-- [Results](#results)
+- [Dashboard](#dashboard)
 
 ## Project Overview
 
@@ -107,5 +107,7 @@ Run Pytest: Execute all unit tests.
     
     pytest tests/
 
-## Results
-![Dashboard](https://github.com/Aditya-NeuralNetNinja/d2p_proj/blob/automation/Updated_Dashboard.png)
+## Dashboard
+Interactive Dashboard hosted on Looker Studio (Google Cloud): https://lookerstudio.google.com/reporting/f845c6fc-f234-4283-93c2-4ca245c843ec
+
+![Dashboard](https://github.com/Aditya-NeuralNetNinja/d2p_proj/blob/automation/Dashboard.png)
