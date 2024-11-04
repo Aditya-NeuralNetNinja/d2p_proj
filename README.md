@@ -1,1 +1,1 @@
-# d2p_project
+# Inventory Forecasting System for Retail Supply Chain Optimization
