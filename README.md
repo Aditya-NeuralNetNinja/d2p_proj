@@ -1,6 +1,6 @@
 # Inventory Forecasting System for Retail Supply Chain Optimization
 
-A robust, machine learning-driven inventory forecasting system designed for retail shopping malls to optimize supply chain management by addressing overstocking and understocking issues. The system leverages a blend of data processing, ML algorithms, and deployment infrastructure to deliver reliable forecasts.
+A robust, machine learning-driven end-to-end inventory forecasting system designed for retail shopping malls to optimize supply chain management by addressing overstocking and understocking issues. The system leverages a blend of data processing, ML algorithms, and deployment infrastructure to deliver reliable forecasts.
 
 ## Table of Contents
 
@@ -108,6 +108,6 @@ Run Pytest: Execute all unit tests.
     pytest tests/
 
 ## Dashboard
-Interactive Dashboard hosted on Looker Studio (Google Cloud): https://lookerstudio.google.com/reporting/f845c6fc-f234-4283-93c2-4ca245c843ec
+Interactive Dashboard hosted on Looker Studio (Google Cloud): [LIVE Demo](https://lookerstudio.google.com/reporting/f845c6fc-f234-4283-93c2-4ca245c843ec)
 
 ![Dashboard](https://github.com/Aditya-NeuralNetNinja/d2p_proj/blob/automation/Dashboard.png)
