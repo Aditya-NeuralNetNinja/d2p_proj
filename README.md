@@ -2,6 +2,9 @@
 
 A robust, machine learning-driven end-to-end inventory forecasting system designed for retail shopping malls to optimize supply chain management by addressing overstocking and understocking issues. The system leverages a blend of data processing, ML algorithms, and deployment infrastructure to deliver reliable forecasts.
 
+## Note
+Head over to automation branch for execution: [Automation](https://github.com/Aditya-NeuralNetNinja/d2p_proj/tree/automation)
+
 ## Table of Contents
 
 - [Project Overview](#project-overview)
